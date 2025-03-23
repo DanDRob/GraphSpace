@@ -10,7 +10,8 @@ import uuid
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import faiss
 import lancedb
-import lancedb.embeddings
+from lancedb.embeddings import get_registry
+import pyarrow as pa
 
 
 @dataclass
@@ -127,25 +128,26 @@ class EmbeddingModule:
 
         # Initialize LanceDB with the BGE embeddings
         self.vector_db = lancedb.connect(storage_path)
-        self.embedding_model = lancedb.embeddings.SentenceTransformer(
-            model_name)
+        self.embedding_model = get_registry().get(
+            "sentence-transformers").create(name=model_name)
 
         # Create tables if they don't exist
         self._init_tables()
 
     def _init_tables(self):
         """Initialize vector database tables for each level."""
-        schema = {
-            "id": "str",
-            "text": "str",
-            "source_id": "str",
-            "parent_id": "str",
-            "child_ids": "list[str]",
-            "metadata": "json",
-            "level": "int",
-            "position": "int",
-            "vector": f"vector({self.embedding_dimension})"
-        }
+        # Define schema using pyarrow
+        schema = pa.schema([
+            ("id", pa.string()),
+            ("text", pa.string()),
+            ("source_id", pa.string()),
+            ("parent_id", pa.string()),
+            ("child_ids", pa.list_(pa.string())),
+            ("metadata", pa.string()),  # JSON as string
+            ("level", pa.int32()),
+            ("position", pa.int32()),
+            ("vector", pa.list_(pa.float32(), self.embedding_dimension))
+        ])
 
         # Create a table for each level if it doesn't exist
         for level in range(4):
@@ -153,9 +155,7 @@ class EmbeddingModule:
             if table_name not in self.vector_db.table_names():
                 self.vector_db.create_table(
                     table_name,
-                    schema=schema,
-                    embedding=self.embedding_model,
-                    embedding_column="vector"
+                    schema=schema
                 )
 
     def embed_text(self, text: str) -> np.ndarray:

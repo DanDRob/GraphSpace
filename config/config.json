@@ -1,0 +1,15 @@
+{
+  "embedding": {
+    "model": "sentence-transformers/all-mpnet-base-v2",
+    "dimension": 768
+  },
+  "llm": {
+    "api_enabled": true,
+    "model": "deepseek-ai/deepseek-chat-v1",
+    "fallback_model": "meta-llama/Llama-3-8B-Instruct"
+  },
+  "document_processing": {
+    "max_workers": 4,
+    "chunk_size": 1000
+  }
+}

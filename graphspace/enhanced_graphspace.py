@@ -129,7 +129,7 @@ class EnhancedGraphSpace:
         """Initialize embedding module based on configuration."""
         model_name = self.config["embedding"]["model"]
         dimension = self.config["embedding"]["dimension"]
-        return EmbeddingModule(model_name=model_name, dimension=dimension)
+        return EmbeddingModule(model_name=model_name, embedding_dimension=dimension)
 
     def _init_llm_module(self, use_api: bool, api_key: Optional[str]) -> AdvancedLLMModule:
         """Initialize LLM module based on configuration."""
