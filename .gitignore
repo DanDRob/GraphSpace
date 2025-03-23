@@ -1,0 +1,50 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Project-specific files
+.env
+client_secrets.json
+**/client_secrets.json
+data/model_cache/
+data/uploads/
+data/vector_db/
+data/user_data.json
+**/model_cache/
+**/uploads/
+**/*.index
+**/*.mappings
+**/index_state.json
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,1935 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GraphSpace Productivity Assistant</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .container {
+        max-width: 800px;
+      }
+      .card {
+        margin-bottom: 20px;
+      }
+      #response-container {
+        margin-top: 20px;
+        display: none;
+      }
+      #context-container {
+        margin-top: 15px;
+        font-size: 0.9em;
+      }
+      .context-item {
+        margin-bottom: 8px;
+        padding: 8px;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+      }
+      .note-item {
+        border-left: 4px solid #17a2b8;
+      }
+      .task-item {
+        border-left: 4px solid #28a745;
+      }
+      .contact-item {
+        border-left: 4px solid #fd7e14;
+      }
+      .loading {
+        display: none;
+        text-align: center;
+        margin: 20px 0;
+      }
+      .tab-content {
+        padding: 20px;
+        border: 1px solid #dee2e6;
+        border-top: none;
+        border-radius: 0 0 0.25rem 0.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container my-5">
+      <h1 class="text-center mb-4">GraphSpace Productivity Assistant</h1>
+
+      <!-- Tabs -->
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            id="query-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#query"
+            type="button"
+            role="tab"
+            aria-controls="query"
+            aria-selected="true"
+          >
+            Query
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="add-note-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#add-note"
+            type="button"
+            role="tab"
+            aria-controls="add-note"
+            aria-selected="false"
+          >
+            Add Note
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="add-task-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#add-task"
+            type="button"
+            role="tab"
+            aria-controls="add-task"
+            aria-selected="false"
+          >
+            Add Task
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="add-contact-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#add-contact"
+            type="button"
+            role="tab"
+            aria-controls="add-contact"
+            aria-selected="false"
+          >
+            Add Contact
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="documents-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#documents"
+            type="button"
+            role="tab"
+            aria-controls="documents"
+            aria-selected="false"
+          >
+            Documents
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="calendar-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#calendar"
+            type="button"
+            role="tab"
+            aria-controls="calendar"
+            aria-selected="false"
+          >
+            Calendar
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="graph-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#graph"
+            type="button"
+            role="tab"
+            aria-controls="graph"
+            aria-selected="false"
+          >
+            Graph
+          </button>
+        </li>
+      </ul>
+
+      <!-- Tab content -->
+      <div class="tab-content" id="myTabContent">
+        <!-- Query Tab -->
+        <div
+          class="tab-pane fade show active"
+          id="query"
+          role="tabpanel"
+          aria-labelledby="query-tab"
+        >
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Ask a question about your knowledge</h5>
+              <div class="mb-3">
+                <textarea
+                  class="form-control"
+                  id="query-input"
+                  rows="3"
+                  placeholder="What would you like to know?"
+                ></textarea>
+              </div>
+              <button id="submit-query" class="btn btn-primary">
+                Submit Query
+              </button>
+
+              <div id="loading-query" class="loading">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Processing your query...</p>
+              </div>
+
+              <div id="response-container" class="mt-4">
+                <h5>Response:</h5>
+                <div id="response-text" class="p-3 bg-light rounded"></div>
+
+                <div id="context-container" class="mt-3">
+                  <h6>Based on:</h6>
+                  <div id="context-items"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Note Tab -->
+        <div
+          class="tab-pane fade"
+          id="add-note"
+          role="tabpanel"
+          aria-labelledby="add-note-tab"
+        >
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Add a new note</h5>
+              <form id="note-form">
+                <div class="mb-3">
+                  <label for="note-title" class="form-label">Title</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="note-title"
+                    placeholder="Note title"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="note-content" class="form-label">Content</label>
+                  <textarea
+                    class="form-control"
+                    id="note-content"
+                    rows="5"
+                    required
+                    placeholder="Note content"
+                  ></textarea>
+                </div>
+                <div class="mb-3">
+                  <label for="note-tags" class="form-label"
+                    >Tags (comma-separated)</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="note-tags"
+                    placeholder="work, important, idea"
+                  />
+                </div>
+                <button type="submit" class="btn btn-success">Save Note</button>
+
+                <div id="loading-note" class="loading">
+                  <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <p>Saving note...</p>
+                </div>
+
+                <div
+                  class="alert alert-success mt-3"
+                  id="note-success"
+                  style="display: none"
+                >
+                  Note added successfully!
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Task Tab -->
+        <div
+          class="tab-pane fade"
+          id="add-task"
+          role="tabpanel"
+          aria-labelledby="add-task-tab"
+        >
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Add a new task</h5>
+              <form id="task-form">
+                <div class="mb-3">
+                  <label for="task-title" class="form-label">Title</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="task-title"
+                    placeholder="Task title"
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="task-description" class="form-label"
+                    >Description</label
+                  >
+                  <textarea
+                    class="form-control"
+                    id="task-description"
+                    rows="3"
+                    placeholder="Task description"
+                  ></textarea>
+                </div>
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="task-status" class="form-label">Status</label>
+                    <select class="form-select" id="task-status">
+                      <option value="pending">Pending</option>
+                      <option value="in-progress">In Progress</option>
+                      <option value="completed">Completed</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="task-priority" class="form-label"
+                      >Priority</label
+                    >
+                    <select class="form-select" id="task-priority">
+                      <option value="low">Low</option>
+                      <option value="medium" selected>Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="task-due-date" class="form-label">Due Date</label>
+                  <input type="date" class="form-control" id="task-due-date" />
+                </div>
+                <div class="mb-3">
+                  <label for="task-project" class="form-label">Project</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="task-project"
+                    placeholder="Project name"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="task-tags" class="form-label"
+                    >Tags (comma-separated)</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="task-tags"
+                    placeholder="urgent, meeting, followup"
+                  />
+                </div>
+
+                <!-- Recurring task options -->
+                <div class="mb-3 form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="task-is-recurring"
+                  />
+                  <label class="form-check-label" for="task-is-recurring">
+                    Recurring Task
+                  </label>
+                </div>
+
+                <div
+                  id="recurring-options"
+                  class="mb-3 border p-3 rounded"
+                  style="display: none"
+                >
+                  <h6>Recurrence Options</h6>
+                  <div class="mb-3">
+                    <label for="task-recurrence-frequency" class="form-label"
+                      >Frequency</label
+                    >
+                    <select class="form-select" id="task-recurrence-frequency">
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label for="task-recurrence-start-date" class="form-label"
+                      >Start Date</label
+                    >
+                    <input
+                      type="date"
+                      class="form-control"
+                      id="task-recurrence-start-date"
+                    />
+                  </div>
+                </div>
+
+                <!-- Calendar integration -->
+                <div class="mb-3 form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="task-calendar-sync"
+                  />
+                  <label class="form-check-label" for="task-calendar-sync">
+                    Sync with Calendar
+                  </label>
+                </div>
+
+                <div
+                  id="calendar-options"
+                  class="mb-3 border p-3 rounded"
+                  style="display: none"
+                >
+                  <div class="mb-3">
+                    <label for="task-calendar-provider" class="form-label"
+                      >Calendar Service</label
+                    >
+                    <select class="form-select" id="task-calendar-provider">
+                      <option value="google">Google Calendar</option>
+                      <option value="microsoft">Microsoft Calendar</option>
+                      <option value="apple">Apple Calendar</option>
+                    </select>
+                  </div>
+                  <div
+                    id="calendar-connection-status"
+                    class="alert alert-warning"
+                  >
+                    Not connected to any calendar service. Visit the Calendar
+                    tab to connect.
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Task</button>
+              </form>
+
+              <div id="task-result" class="mt-3" style="display: none"></div>
+            </div>
+          </div>
+
+          <div class="card mt-4">
+            <div class="card-body">
+              <h5 class="card-title">My Tasks</h5>
+              <ul class="nav nav-tabs" id="task-list-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link active"
+                    id="pending-tasks-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#pending-tasks"
+                    type="button"
+                    role="tab"
+                  >
+                    Pending
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link"
+                    id="in-progress-tasks-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#in-progress-tasks"
+                    type="button"
+                    role="tab"
+                  >
+                    In Progress
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link"
+                    id="completed-tasks-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#completed-tasks"
+                    type="button"
+                    role="tab"
+                  >
+                    Completed
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link"
+                    id="recurring-tasks-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#recurring-tasks"
+                    type="button"
+                    role="tab"
+                  >
+                    Recurring
+                  </button>
+                </li>
+              </ul>
+
+              <div class="tab-content pt-3" id="task-list-content">
+                <div
+                  class="tab-pane fade show active"
+                  id="pending-tasks"
+                  role="tabpanel"
+                >
+                  <div id="pending-tasks-list" class="list-group">
+                    <!-- Pending tasks will be populated here -->
+                    <div class="text-center py-3" id="pending-tasks-loading">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                    <div
+                      class="alert alert-info"
+                      id="pending-tasks-empty"
+                      style="display: none"
+                    >
+                      No pending tasks found.
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  class="tab-pane fade"
+                  id="in-progress-tasks"
+                  role="tabpanel"
+                >
+                  <div id="in-progress-tasks-list" class="list-group">
+                    <!-- In-progress tasks will be populated here -->
+                    <div
+                      class="text-center py-3"
+                      id="in-progress-tasks-loading"
+                    >
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                    <div
+                      class="alert alert-info"
+                      id="in-progress-tasks-empty"
+                      style="display: none"
+                    >
+                      No in-progress tasks found.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="completed-tasks" role="tabpanel">
+                  <div id="completed-tasks-list" class="list-group">
+                    <!-- Completed tasks will be populated here -->
+                    <div class="text-center py-3" id="completed-tasks-loading">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                    <div
+                      class="alert alert-info"
+                      id="completed-tasks-empty"
+                      style="display: none"
+                    >
+                      No completed tasks found.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="recurring-tasks" role="tabpanel">
+                  <div id="recurring-tasks-list" class="list-group">
+                    <!-- Recurring tasks will be populated here -->
+                    <div class="text-center py-3" id="recurring-tasks-loading">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                    <div
+                      class="alert alert-info"
+                      id="recurring-tasks-empty"
+                      style="display: none"
+                    >
+                      No recurring tasks found.
+                    </div>
+                  </div>
+
+                  <!-- Button to manually trigger recurring tasks -->
+                  <div class="mt-3">
+                    <button
+                      id="process-recurring-tasks"
+                      class="btn btn-outline-primary"
+                    >
+                      Process Due Recurring Tasks
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Contact Tab -->
+        <div
+          class="tab-pane fade"
+          id="add-contact"
+          role="tabpanel"
+          aria-labelledby="add-contact-tab"
+        >
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Add a new contact</h5>
+              <form id="contact-form">
+                <div class="mb-3">
+                  <label for="contact-name" class="form-label">Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="contact-name"
+                    required
+                    placeholder="Contact name"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="contact-email" class="form-label">Email</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="contact-email"
+                    placeholder="email@example.com"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="contact-phone" class="form-label">Phone</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="contact-phone"
+                    placeholder="Phone number"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="contact-organization" class="form-label"
+                    >Organization</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="contact-organization"
+                    placeholder="Organization"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="contact-tags" class="form-label"
+                    >Tags (comma-separated)</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="contact-tags"
+                    placeholder="colleague, client, friend"
+                  />
+                </div>
+                <button type="submit" class="btn btn-success">
+                  Save Contact
+                </button>
+
+                <div id="loading-contact" class="loading">
+                  <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <p>Saving contact...</p>
+                </div>
+
+                <div
+                  class="alert alert-success mt-3"
+                  id="contact-success"
+                  style="display: none"
+                >
+                  Contact added successfully!
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documents Tab -->
+        <div
+          class="tab-pane fade"
+          id="documents"
+          role="tabpanel"
+          aria-labelledby="documents-tab"
+        >
+          <div class="row">
+            <div class="col-md-12 mb-4">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Upload Document</h5>
+                  <form id="document-upload-form" enctype="multipart/form-data">
+                    <div class="mb-3">
+                      <label for="document-file" class="form-label"
+                        >Select Document</label
+                      >
+                      <input
+                        class="form-control"
+                        type="file"
+                        id="document-file"
+                        name="file"
+                      />
+                      <div class="form-text">
+                        Supported formats: PDF, DOCX, TXT, MD
+                      </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                      Upload & Process
+                    </button>
+                  </form>
+                  <div id="document-upload-loading" class="loading mt-3">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">
+                      Processing document... This may take a moment.
+                    </p>
+                  </div>
+                  <div
+                    id="document-upload-result"
+                    class="mt-3"
+                    style="display: none"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">My Documents</h5>
+                  <div id="documents-loading" class="loading">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading documents...</p>
+                  </div>
+                  <div id="documents-list" class="list-group mt-3"></div>
+                  <div id="document-details" class="mt-4" style="display: none">
+                    <h5 id="document-title"></h5>
+                    <div class="mb-2">
+                      <span class="badge bg-primary me-1">Document</span>
+                      <span id="document-date" class="text-muted"></span>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-8">
+                        <div class="card mb-3">
+                          <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted">
+                              Summary
+                            </h6>
+                            <p id="document-summary"></p>
+                          </div>
+                        </div>
+                        <div class="card">
+                          <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted">
+                              Content Preview
+                            </h6>
+                            <p id="document-content"></p>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="card mb-3">
+                          <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted">
+                              Topics
+                            </h6>
+                            <div id="document-topics"></div>
+                          </div>
+                        </div>
+                        <div class="card">
+                          <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted">
+                              Entities
+                            </h6>
+                            <div id="document-entities"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendar Tab -->
+        <div
+          class="tab-pane fade"
+          id="calendar"
+          role="tabpanel"
+          aria-labelledby="calendar-tab"
+        >
+          <div class="row">
+            <div class="col-md-12 mb-4">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Connect Calendar Services</h5>
+                  <p class="card-text">
+                    Connect your calendar services to sync your tasks with your
+                    calendars.
+                  </p>
+
+                  <div id="calendar-services" class="mt-4">
+                    <div class="text-center py-3" id="calendars-loading">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                      <p>Loading available calendar services...</p>
+                    </div>
+
+                    <!-- Calendar services will be populated here -->
+                    <div id="calendar-list"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Calendar Sync Settings</h5>
+                  <form id="calendar-sync-form">
+                    <div class="mb-3">
+                      <label class="form-label">Sync Direction</label>
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="sync-direction"
+                          id="sync-both"
+                          value="both"
+                          checked
+                        />
+                        <label class="form-check-label" for="sync-both">
+                          Two-way sync (GraphSpace ↔ Calendar)
+                        </label>
+                      </div>
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="sync-direction"
+                          id="sync-to-calendar"
+                          value="to-calendar"
+                        />
+                        <label class="form-check-label" for="sync-to-calendar">
+                          One-way sync (GraphSpace → Calendar)
+                        </label>
+                      </div>
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="sync-direction"
+                          id="sync-from-calendar"
+                          value="from-calendar"
+                        />
+                        <label
+                          class="form-check-label"
+                          for="sync-from-calendar"
+                        >
+                          One-way sync (Calendar → GraphSpace)
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label">Sync Frequency</label>
+                      <select class="form-select" id="sync-frequency">
+                        <option value="manual">Manual Only</option>
+                        <option value="hourly" selected>Hourly</option>
+                        <option value="daily">Daily</option>
+                      </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                      Save Settings
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-outline-primary ms-2"
+                      id="sync-now"
+                    >
+                      Sync Now
+                    </button>
+                  </form>
+
+                  <div id="sync-status" class="mt-3"></div>
+                  <div id="sync-history" class="mt-4">
+                    <h6>Sync History</h6>
+                    <div id="sync-history-list" class="list-group">
+                      <!-- Sync history will be populated here -->
+                      <div class="list-group-item text-center">
+                        No sync history available yet.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Graph Tab -->
+        <div
+          class="tab-pane fade"
+          id="graph"
+          role="tabpanel"
+          aria-labelledby="graph-tab"
+        >
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Knowledge Graph</h5>
+              <div
+                id="graph-container"
+                style="height: 400px; border: 1px solid #ddd"
+              ></div>
+              <div class="mt-3">
+                <button id="load-graph" class="btn btn-primary">
+                  Load Graph
+                </button>
+                <div id="loading-graph" class="loading">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <p>Loading graph...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Query form submission
+        document
+          .getElementById("query-form")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const queryInput = document.getElementById("query-input").value;
+            if (!queryInput.trim()) {
+              alert("Please enter a query");
+              return;
+            }
+
+            // Show loading indicator
+            document.getElementById("query-loading").style.display = "block";
+            document.getElementById("response-container").style.display =
+              "none";
+
+            // Make API request
+            fetch("/api/query", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ query: queryInput }),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                // Hide loading indicator
+                document.getElementById("query-loading").style.display = "none";
+
+                // Show response
+                document.getElementById("response-text").textContent =
+                  data.response || "No response from the system.";
+
+                // Show context items
+                const contextContainer =
+                  document.getElementById("context-items");
+                contextContainer.innerHTML = "";
+
+                if (data.context && data.context.length > 0) {
+                  document.getElementById("context-container").style.display =
+                    "block";
+
+                  data.context.forEach((item) => {
+                    const div = document.createElement("div");
+                    div.className = "context-item";
+
+                    // Add specific class based on item type
+                    if (item.type === "note") {
+                      div.classList.add("note-item");
+                    } else if (item.type === "task") {
+                      div.classList.add("task-item");
+                    } else if (item.type === "contact") {
+                      div.classList.add("contact-item");
+                    }
+
+                    // Add item content
+                    let content = "";
+                    if (item.type === "note") {
+                      content += `<strong>${item.title}</strong>`;
+                      if (item.content) {
+                        content += `<p>${item.content}</p>`;
+                      }
+                    } else if (item.type === "task") {
+                      content += `<strong>${item.title}</strong>`;
+                      if (item.description) {
+                        content += `<p>${item.description}</p>`;
+                      }
+                      content += `<p><em>Status: ${item.status}</em></p>`;
+                    } else if (item.type === "contact") {
+                      content += `<strong>${item.name}</strong>`;
+                      if (item.organization) {
+                        content += `<p>${item.organization}</p>`;
+                      }
+                      if (item.email) {
+                        content += `<p>${item.email}</p>`;
+                      }
+                    }
+
+                    div.innerHTML = content;
+                    contextContainer.appendChild(div);
+                  });
+                } else {
+                  document.getElementById("context-container").style.display =
+                    "none";
+                }
+
+                document.getElementById("response-container").style.display =
+                  "block";
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                document.getElementById("query-loading").style.display = "none";
+                alert("An error occurred while processing your query.");
+              });
+          });
+
+        // Note form submission
+        document
+          .getElementById("note-form")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const title = document.getElementById("note-title").value;
+            const content = document.getElementById("note-content").value;
+            const tagsInput = document.getElementById("note-tags").value;
+
+            if (!content.trim()) {
+              alert("Note content is required");
+              return;
+            }
+
+            // Process tags (comma-separated)
+            const tags = tagsInput
+              ? tagsInput.split(",").map((tag) => tag.trim())
+              : [];
+
+            // Show loading indicator
+            document.getElementById("note-loading").style.display = "block";
+            document.getElementById("note-result").style.display = "none";
+
+            // Make API request
+            fetch("/api/add_note", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                title: title,
+                content: content,
+                tags: tags,
+              }),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                // Hide loading indicator
+                document.getElementById("note-loading").style.display = "none";
+
+                if (data.success) {
+                  document.getElementById("note-result").innerHTML =
+                    '<div class="alert alert-success">Note added successfully!</div>';
+                  document.getElementById("note-form").reset();
+                } else {
+                  document.getElementById("note-result").innerHTML = `
+                    <div class="alert alert-danger">
+                      Error: ${data.error || "Unknown error"}
+                    </div>
+                  `;
+                }
+
+                document.getElementById("note-result").style.display = "block";
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                document.getElementById("note-loading").style.display = "none";
+                document.getElementById("note-result").innerHTML = `
+                  <div class="alert alert-danger">
+                    An error occurred while adding the note.
+                  </div>
+                `;
+                document.getElementById("note-result").style.display = "block";
+              });
+          });
+
+        // Task form handling - Show/hide recurring options
+        document
+          .getElementById("task-is-recurring")
+          .addEventListener("change", function () {
+            document.getElementById("recurring-options").style.display = this
+              .checked
+              ? "block"
+              : "none";
+          });
+
+        // Task form handling - Show/hide calendar options
+        document
+          .getElementById("task-calendar-sync")
+          .addEventListener("change", function () {
+            document.getElementById("calendar-options").style.display = this
+              .checked
+              ? "block"
+              : "none";
+          });
+
+        // Task form submission
+        document
+          .getElementById("task-form")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const title = document.getElementById("task-title").value;
+            const description =
+              document.getElementById("task-description").value;
+            const status = document.getElementById("task-status").value;
+            const priority = document.getElementById("task-priority").value;
+            const dueDate = document.getElementById("task-due-date").value;
+            const project = document.getElementById("task-project").value;
+            const tagsInput = document.getElementById("task-tags").value;
+
+            // Recurrence options
+            const isRecurring =
+              document.getElementById("task-is-recurring").checked;
+            const recurrenceFrequency = document.getElementById(
+              "task-recurrence-frequency"
+            ).value;
+            const recurrenceStartDate = document.getElementById(
+              "task-recurrence-start-date"
+            ).value;
+
+            // Calendar options
+            const calendarSync =
+              document.getElementById("task-calendar-sync").checked;
+            const calendarProvider = document.getElementById(
+              "task-calendar-provider"
+            ).value;
+
+            if (!title.trim()) {
+              alert("Task title is required");
+              return;
+            }
+
+            // Process tags (comma-separated)
+            const tags = tagsInput
+              ? tagsInput.split(",").map((tag) => tag.trim())
+              : [];
+
+            // Show task result area with loading
+            const resultElement = document.getElementById("task-result");
+            resultElement.innerHTML = `
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <span class="ms-2">Saving task...</span>
+            `;
+            resultElement.style.display = "block";
+
+            // Prepare task data based on whether it's recurring or not
+            const taskData = {
+              title: title,
+              description: description,
+              status: status,
+              priority: priority,
+              due_date: dueDate,
+              project: project,
+              tags: tags,
+              is_recurring: isRecurring,
+              calendar_sync: calendarSync,
+              calendar_provider: calendarProvider,
+            };
+
+            // Add recurrence fields if it's a recurring task
+            if (isRecurring) {
+              taskData.recurrence_frequency = recurrenceFrequency;
+              taskData.recurrence_start_date =
+                recurrenceStartDate || new Date().toISOString().split("T")[0];
+            }
+
+            // Make API request to the unified tasks endpoint
+            fetch("/api/tasks", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(taskData),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  resultElement.innerHTML =
+                    '<div class="alert alert-success">Task added successfully!</div>';
+                  document.getElementById("task-form").reset();
+
+                  // Hide the recurring and calendar options
+                  document.getElementById("recurring-options").style.display =
+                    "none";
+                  document.getElementById("calendar-options").style.display =
+                    "none";
+
+                  // Reload the task lists
+                  loadTasks();
+                } else {
+                  resultElement.innerHTML = `
+                    <div class="alert alert-danger">
+                      Error: ${data.error || "Unknown error"}
+                    </div>
+                  `;
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                resultElement.innerHTML = `
+                  <div class="alert alert-danger">
+                    An error occurred while adding the task.
+                  </div>
+                `;
+              });
+          });
+
+        // Load tasks when the tasks tab is shown
+        document
+          .querySelector('button[data-bs-target="#add-task"]')
+          .addEventListener("shown.bs.tab", function (e) {
+            loadTasks();
+          });
+
+        // Load tasks for each status tab
+        document
+          .querySelector('button[data-bs-target="#pending-tasks"]')
+          .addEventListener("shown.bs.tab", function (e) {
+            loadTasksByStatus("pending");
+          });
+
+        document
+          .querySelector('button[data-bs-target="#in-progress-tasks"]')
+          .addEventListener("shown.bs.tab", function (e) {
+            loadTasksByStatus("in-progress");
+          });
+
+        document
+          .querySelector('button[data-bs-target="#completed-tasks"]')
+          .addEventListener("shown.bs.tab", function (e) {
+            loadTasksByStatus("completed");
+          });
+
+        document
+          .querySelector('button[data-bs-target="#recurring-tasks"]')
+          .addEventListener("shown.bs.tab", function (e) {
+            loadRecurringTasks();
+          });
+
+        // Process recurring tasks button
+        document
+          .getElementById("process-recurring-tasks")
+          .addEventListener("click", function () {
+            processRecurringTasks();
+          });
+
+        // Function to load all tasks and distribute them to appropriate tabs
+        function loadTasks() {
+          loadTasksByStatus("pending");
+          loadTasksByStatus("in-progress");
+          loadTasksByStatus("completed");
+          loadRecurringTasks();
+        }
+
+        // Function to load tasks by status
+        function loadTasksByStatus(status) {
+          const listElement = document.getElementById(`${status}-tasks-list`);
+          const loadingElement = document.getElementById(
+            `${status}-tasks-loading`
+          );
+          const emptyElement = document.getElementById(`${status}-tasks-empty`);
+
+          // Show loading
+          if (loadingElement) loadingElement.style.display = "block";
+          if (emptyElement) emptyElement.style.display = "none";
+
+          // Clear existing items except loading
+          Array.from(listElement.children).forEach((child) => {
+            if (!child.id || !child.id.includes("loading")) {
+              listElement.removeChild(child);
+            }
+          });
+
+          fetch("/api/tasks")
+            .then((response) => response.json())
+            .then((data) => {
+              // Hide loading
+              if (loadingElement) loadingElement.style.display = "none";
+
+              if (data.error) {
+                console.error("Error loading tasks:", data.error);
+                return;
+              }
+
+              // Filter tasks by status and not recurring
+              const filteredTasks = data.tasks.filter(
+                (task) => task.status === status && !task.is_recurring
+              );
+
+              if (filteredTasks.length === 0) {
+                if (emptyElement) emptyElement.style.display = "block";
+                return;
+              }
+
+              // Add tasks to the list
+              filteredTasks.forEach((task) => {
+                const dueDate = task.due_date
+                  ? new Date(task.due_date).toLocaleDateString()
+                  : "No due date";
+
+                const item = document.createElement("div");
+                item.className = "list-group-item";
+                item.innerHTML = `
+                  <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">${task.title}</h5>
+                    <small>${dueDate}</small>
+                  </div>
+                  <p class="mb-1">${task.description || "No description"}</p>
+                  <div>
+                    ${
+                      task.project
+                        ? `<span class="badge bg-secondary me-1">${task.project}</span>`
+                        : ""
+                    }
+                    ${task.tags
+                      .map(
+                        (tag) =>
+                          `<span class="badge bg-info me-1">${tag}</span>`
+                      )
+                      .join("")}
+                    <span class="badge bg-${
+                      task.priority === "high"
+                        ? "danger"
+                        : task.priority === "medium"
+                        ? "warning"
+                        : "success"
+                    } me-1">${task.priority}</span>
+                  </div>
+                  <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-primary task-edit" data-id="${
+                      task.id
+                    }">Edit</button>
+                    <button class="btn btn-sm btn-outline-danger task-delete" data-id="${
+                      task.id
+                    }">Delete</button>
+                    ${
+                      status !== "completed"
+                        ? `<button class="btn btn-sm btn-outline-success task-complete" data-id="${task.id}">Complete</button>`
+                        : ""
+                    }
+                  </div>
+                `;
+
+                listElement.appendChild(item);
+              });
+
+              // Add event listeners to buttons
+              document.querySelectorAll(".task-edit").forEach((button) => {
+                button.addEventListener("click", function () {
+                  const taskId = this.getAttribute("data-id");
+                  editTask(taskId);
+                });
+              });
+
+              document.querySelectorAll(".task-delete").forEach((button) => {
+                button.addEventListener("click", function () {
+                  const taskId = this.getAttribute("data-id");
+                  deleteTask(taskId);
+                });
+              });
+
+              document.querySelectorAll(".task-complete").forEach((button) => {
+                button.addEventListener("click", function () {
+                  const taskId = this.getAttribute("data-id");
+                  completeTask(taskId);
+                });
+              });
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              if (loadingElement) loadingElement.style.display = "none";
+            });
+        }
+
+        // Function to load recurring tasks
+        function loadRecurringTasks() {
+          const listElement = document.getElementById("recurring-tasks-list");
+          const loadingElement = document.getElementById(
+            "recurring-tasks-loading"
+          );
+          const emptyElement = document.getElementById("recurring-tasks-empty");
+
+          // Show loading
+          if (loadingElement) loadingElement.style.display = "block";
+          if (emptyElement) emptyElement.style.display = "none";
+
+          // Clear existing items except loading
+          Array.from(listElement.children).forEach((child) => {
+            if (!child.id || !child.id.includes("loading")) {
+              listElement.removeChild(child);
+            }
+          });
+
+          fetch("/api/tasks")
+            .then((response) => response.json())
+            .then((data) => {
+              // Hide loading
+              if (loadingElement) loadingElement.style.display = "none";
+
+              if (data.error) {
+                console.error("Error loading tasks:", data.error);
+                return;
+              }
+
+              // Filter recurring tasks
+              const recurringTasks = data.tasks.filter(
+                (task) => task.is_recurring
+              );
+
+              if (recurringTasks.length === 0) {
+                if (emptyElement) emptyElement.style.display = "block";
+                return;
+              }
+
+              // Add tasks to the list
+              recurringTasks.forEach((task) => {
+                const nextRun = task.recurrence_next_run
+                  ? new Date(task.recurrence_next_run).toLocaleString()
+                  : "Not scheduled";
+
+                const enabled = task.recurrence_enabled !== false;
+
+                const item = document.createElement("div");
+                item.className = "list-group-item";
+                item.innerHTML = `
+                  <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">${task.title}</h5>
+                    <small>${task.recurrence_frequency || "unknown"}</small>
+                  </div>
+                  <p class="mb-1">${task.description || "No description"}</p>
+                  <p>Next run: ${nextRun}</p>
+                  <div>
+                    ${
+                      task.project
+                        ? `<span class="badge bg-secondary me-1">${task.project}</span>`
+                        : ""
+                    }
+                    ${task.tags
+                      .map(
+                        (tag) =>
+                          `<span class="badge bg-info me-1">${tag}</span>`
+                      )
+                      .join("")}
+                    <span class="badge bg-${
+                      enabled ? "success" : "secondary"
+                    } me-1">${enabled ? "Enabled" : "Disabled"}</span>
+                  </div>
+                  <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-primary task-edit" data-id="${
+                      task.id
+                    }">Edit</button>
+                    <button class="btn btn-sm btn-outline-danger task-delete" data-id="${
+                      task.id
+                    }">Delete</button>
+                    <button class="btn btn-sm btn-outline-${
+                      enabled ? "warning" : "success"
+                    } task-toggle" data-id="${
+                  task.id
+                }" data-enabled="${enabled}">
+                      ${enabled ? "Disable" : "Enable"}
+                    </button>
+                  </div>
+                `;
+
+                listElement.appendChild(item);
+              });
+
+              // Add event listeners to buttons
+              document.querySelectorAll(".task-edit").forEach((button) => {
+                button.addEventListener("click", function () {
+                  const taskId = this.getAttribute("data-id");
+                  editTask(taskId);
+                });
+              });
+
+              document.querySelectorAll(".task-delete").forEach((button) => {
+                button.addEventListener("click", function () {
+                  const taskId = this.getAttribute("data-id");
+                  deleteTask(taskId);
+                });
+              });
+
+              document.querySelectorAll(".task-toggle").forEach((button) => {
+                button.addEventListener("click", function () {
+                  const taskId = this.getAttribute("data-id");
+                  const enabled = this.getAttribute("data-enabled") === "true";
+                  toggleRecurringTask(taskId, !enabled);
+                });
+              });
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              if (loadingElement) loadingElement.style.display = "none";
+            });
+        }
+
+        // Function to edit a task
+        function editTask(taskId) {
+          // For simplicity, we'll just show an alert for now
+          alert(
+            `Edit task ${taskId} - This would open a modal dialog in a complete implementation`
+          );
+        }
+
+        // Function to delete a task
+        function deleteTask(taskId) {
+          if (!confirm("Are you sure you want to delete this task?")) {
+            return;
+          }
+
+          fetch(`/api/tasks/${taskId}`, {
+            method: "DELETE",
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                // Reload tasks
+                loadTasks();
+              } else {
+                alert(`Error: ${data.error || "Unknown error"}`);
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("An error occurred while deleting the task.");
+            });
+        }
+
+        // Function to complete a task
+        function completeTask(taskId) {
+          fetch(`/api/tasks/${taskId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              status: "completed",
+              completed_at: new Date().toISOString(),
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                // Reload tasks
+                loadTasks();
+              } else {
+                alert(`Error: ${data.error || "Unknown error"}`);
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("An error occurred while updating the task.");
+            });
+        }
+
+        // Function to toggle a recurring task's enabled status
+        function toggleRecurringTask(taskId, enable) {
+          fetch(`/api/tasks/${taskId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              recurrence_enabled: enable,
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                // Reload recurring tasks
+                loadRecurringTasks();
+              } else {
+                alert(`Error: ${data.error || "Unknown error"}`);
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("An error occurred while updating the task.");
+            });
+        }
+
+        // Function to process recurring tasks
+        function processRecurringTasks() {
+          const buttonElement = document.getElementById(
+            "process-recurring-tasks"
+          );
+          buttonElement.disabled = true;
+          buttonElement.innerHTML = `
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Processing...
+          `;
+
+          fetch("/api/tasks/process_recurring", {
+            method: "POST",
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              buttonElement.disabled = false;
+              buttonElement.textContent = "Process Due Recurring Tasks";
+
+              if (data.success) {
+                alert(
+                  `Successfully processed recurring tasks. Created ${data.created_count} new task(s).`
+                );
+                // Reload all tasks
+                loadTasks();
+              } else {
+                alert(`Error: ${data.error || "Unknown error"}`);
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              buttonElement.disabled = false;
+              buttonElement.textContent = "Process Due Recurring Tasks";
+              alert("An error occurred while processing recurring tasks.");
+            });
+        }
+
+        // Calendar service handling
+        document
+          .querySelector('button[data-bs-target="#calendar"]')
+          .addEventListener("shown.bs.tab", function (e) {
+            loadCalendarServices();
+          });
+
+        // Function to load available calendar services
+        function loadCalendarServices() {
+          const listElement = document.getElementById("calendar-list");
+          const loadingElement = document.getElementById("calendars-loading");
+
+          // Show loading
+          if (loadingElement) loadingElement.style.display = "block";
+
+          // Clear existing items
+          if (listElement) listElement.innerHTML = "";
+
+          fetch("/api/calendars")
+            .then((response) => response.json())
+            .then((data) => {
+              // Hide loading
+              if (loadingElement) loadingElement.style.display = "none";
+
+              if (data.error) {
+                console.error("Error loading calendars:", data.error);
+                if (listElement) {
+                  listElement.innerHTML = `
+                    <div class="alert alert-danger">
+                      Error loading calendar services: ${data.error}
+                    </div>
+                  `;
+                }
+                return;
+              }
+
+              if (!data.calendars || data.calendars.length === 0) {
+                if (listElement) {
+                  listElement.innerHTML = `
+                    <div class="alert alert-info">
+                      No calendar services available.
+                    </div>
+                  `;
+                }
+                return;
+              }
+
+              // Create card for each calendar service
+              data.calendars.forEach((calendar) => {
+                const card = document.createElement("div");
+                card.className = "card mb-3";
+
+                card.innerHTML = `
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <h5 class="card-title">${calendar.name}</h5>
+                      <span class="badge bg-${
+                        calendar.connected ? "success" : "secondary"
+                      }">
+                        ${calendar.connected ? "Connected" : "Not Connected"}
+                      </span>
+                    </div>
+                    <p class="card-text">${calendar.description || ""}</p>
+                    <button 
+                      class="btn btn-${
+                        calendar.connected ? "outline-danger" : "primary"
+                      } calendar-connect-btn"
+                      data-provider="${calendar.provider}"
+                      data-id="${calendar.id}"
+                      data-connected="${calendar.connected}"
+                    >
+                      ${calendar.connected ? "Disconnect" : "Connect"}
+                    </button>
+                    ${
+                      calendar.connected
+                        ? `<button 
+                        class="btn btn-outline-primary ms-2 calendar-sync-btn"
+                        data-provider="${calendar.provider}"
+                        data-id="${calendar.id}"
+                      >
+                        Sync Now
+                      </button>`
+                        : ""
+                    }
+                  </div>
+                `;
+
+                listElement.appendChild(card);
+              });
+
+              // Add event listeners to connect buttons
+              document
+                .querySelectorAll(".calendar-connect-btn")
+                .forEach((button) => {
+                  button.addEventListener("click", function () {
+                    const provider = this.getAttribute("data-provider");
+                    const id = this.getAttribute("data-id");
+                    const connected =
+                      this.getAttribute("data-connected") === "true";
+
+                    if (connected) {
+                      disconnectCalendar(provider, id);
+                    } else {
+                      connectCalendar(provider, id);
+                    }
+                  });
+                });
+
+              // Add event listeners to sync buttons
+              document
+                .querySelectorAll(".calendar-sync-btn")
+                .forEach((button) => {
+                  button.addEventListener("click", function () {
+                    const provider = this.getAttribute("data-provider");
+                    const id = this.getAttribute("data-id");
+                    syncCalendar(provider, id);
+                  });
+                });
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              if (loadingElement) loadingElement.style.display = "none";
+              if (listElement) {
+                listElement.innerHTML = `
+                  <div class="alert alert-danger">
+                    An error occurred while loading calendar services.
+                  </div>
+                `;
+              }
+            });
+        }
+
+        // Function to connect to a calendar service
+        function connectCalendar(provider, calendarId) {
+          fetch("/api/calendar/connect", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              provider: provider,
+              calendar_id: calendarId,
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                // In a real implementation, we would redirect to the auth URL
+                alert(`Please authorize the app at: ${data.auth_url}`);
+
+                // For demo purposes, we'll just simulate a successful connection
+                setTimeout(() => {
+                  alert("Successfully connected to calendar service!");
+                  loadCalendarServices();
+                }, 1500);
+              } else {
+                alert(`Error: ${data.error || "Unknown error"}`);
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert(
+                "An error occurred while connecting to the calendar service."
+              );
+            });
+        }
+
+        // Function to disconnect from a calendar service
+        function disconnectCalendar(provider, calendarId) {
+          if (
+            !confirm(
+              `Are you sure you want to disconnect from ${provider} calendar?`
+            )
+          ) {
+            return;
+          }
+
+          // In a real implementation, we would have an API endpoint for this
+          // For demo purposes, we'll just simulate a successful disconnection
+          setTimeout(() => {
+            alert("Successfully disconnected from calendar service!");
+            loadCalendarServices();
+          }, 1000);
+        }
+
+        // Function to sync with a calendar service
+        function syncCalendar(provider, calendarId) {
+          fetch("/api/calendar/sync", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              provider: provider,
+              calendar_id: calendarId,
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                alert(data.message || "Calendar sync completed successfully");
+
+                // Update sync status
+                const statusElement = document.getElementById("sync-status");
+                if (statusElement) {
+                  statusElement.innerHTML = `
+                    <div class="alert alert-success">
+                      Last sync: ${new Date().toLocaleString()}
+                    </div>
+                  `;
+                }
+
+                // Reload tasks in case any were added from the calendar
+                loadTasks();
+              } else {
+                alert(`Error: ${data.error || "Unknown error"}`);
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert(
+                "An error occurred while syncing with the calendar service."
+              );
+            });
+        }
+
+        // Calendar sync form submission
+        document
+          .getElementById("calendar-sync-form")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            // Get form values
+            const syncDirection = document.querySelector(
+              'input[name="sync-direction"]:checked'
+            ).value;
+            const syncFrequency =
+              document.getElementById("sync-frequency").value;
+
+            // For demo purposes, we'll just show a success message
+            const statusElement = document.getElementById("sync-status");
+            if (statusElement) {
+              statusElement.innerHTML = `
+                <div class="alert alert-success">
+                  Calendar sync settings saved successfully!
+                </div>
+              `;
+            }
+          });
+
+        // Manual sync button
+        document
+          .getElementById("sync-now")
+          .addEventListener("click", function () {
+            const buttonElement = this;
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = `
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              Syncing...
+            `;
+
+            // For demo purposes, we'll just simulate a sync after delay
+            setTimeout(() => {
+              buttonElement.disabled = false;
+              buttonElement.textContent = "Sync Now";
+
+              const statusElement = document.getElementById("sync-status");
+              if (statusElement) {
+                statusElement.innerHTML = `
+                  <div class="alert alert-success">
+                    Manual sync completed successfully! Last sync: ${new Date().toLocaleString()}
+                  </div>
+                `;
+              }
+
+              // Update sync history
+              const historyElement =
+                document.getElementById("sync-history-list");
+              if (historyElement) {
+                const item = document.createElement("div");
+                item.className = "list-group-item";
+                item.innerHTML = `
+                  <div class="d-flex w-100 justify-content-between">
+                    <span>Manual sync</span>
+                    <small>${new Date().toLocaleString()}</small>
+                  </div>
+                  <small class="text-success">Successfully synced with all connected calendars</small>
+                `;
+
+                // Add at the beginning
+                if (historyElement.firstChild) {
+                  historyElement.insertBefore(item, historyElement.firstChild);
+                } else {
+                  historyElement.appendChild(item);
+                }
+              }
+            }, 2000);
+          });
+      });
+    </script>
+  </body>
+</html>

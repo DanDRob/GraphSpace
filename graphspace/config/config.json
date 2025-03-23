@@ -1,0 +1,30 @@
+{
+  "embedding": {
+    "model_name": "BAAI/bge-large-en-v1.5",
+    "dimension": 1024,
+    "chunk_sizes": {
+      "0": 100000,
+      "1": 10000,
+      "2": 2000,
+      "3": 500
+    }
+  },
+  "llm": {
+    "api_base_url": "https://api.deepseek.com/v1",
+    "model_name": "deepseek-ai/deepseek-chat-v1",
+    "fallback_model_name": "meta-llama/Llama-3-8B-Instruct",
+    "max_context_length": 16384
+  },
+  "document_processor": {
+    "max_workers": 4,
+    "chunk_size": 10
+  },
+  "google_drive": {
+    "cache_expiry": 3600
+  },
+  "app": {
+    "port": 5000,
+    "host": "127.0.0.1",
+    "debug": true
+  }
+}
